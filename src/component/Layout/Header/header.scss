@@ -1,0 +1,27 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@300&display=swap');
+.cart-button {
+    display: flex;
+    button {
+        padding: 10px 0 !important;
+    }
+    .pull-left {
+        margin-right: 5px;
+    }
+    .pull-right {
+        margin-left: 5px;
+    }
+}
+.navbar .navbar-nav .nav-item .nav-link {
+    font-family: 'Nunito', sans-serif;
+    font-size: 19px;
+}
+.register-login {
+    display: flex;
+    min-width: 156px;
+    font-weight: 600;
+    font-size: 15px;
+    margin: 0 25px;
+}
+.register-login a {
+    margin-top: 16px;
+}
