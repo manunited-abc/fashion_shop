@@ -25,3 +25,49 @@
 .register-login a {
     margin-top: 16px;
 }
+.avatar-user {
+    padding: 13px 0 0 12px;
+}
+#user-dropdown {
+    position: absolute;
+    right: 20px;
+    background: #fff;
+    padding: 0;
+    border: 1px solid #e5e5e5;
+    border-top: 3px solid #000;
+    width: 200px;
+    padding: 0;
+    text-align: left;
+    z-index: 1;
+}
+#user-dropdown ul {
+    padding: 10px;
+    margin: 0;
+}
+#user-dropdown ul li {
+    list-style: none;
+    padding-bottom: 10px;
+}
+#user-dropdown a {
+    font: 400 13px/16px Poppins, Helvetica, sans-serif;
+}
+.name-user span {
+    display: block;
+    font-size: 20px;
+    font-weight: 600;
+}
+.name-user {
+    text-align: center;
+    border-top: 1px solid #e5e5e5;
+    background: #e5e5e5;
+}
+.show-user {
+    display: block !important;
+}
+.user-menu {
+    display: none;
+}
+#list-cart {
+    max-height: 400px;
+    overflow-y: auto;
+}

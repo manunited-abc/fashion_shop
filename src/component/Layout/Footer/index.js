@@ -4,8 +4,8 @@ function Footer() {
             <div className="block-newsletter">
                 <div
                     className="parallax"
-                    data-source-url="img/banner/parallax.jpg"
-                    style={{ backgroundImage: 'url(img/banner/parallax.jpg)', backgroundPosition: '50% 65.8718%' }}
+                    data-source-url="../img/banner/parallax.jpg"
+                    style={{ backgroundImage: 'url(../img/banner/parallax.jpg)', backgroundPosition: '50% 65.8718%' }}
                 >
                     <div className="container">
                         <div className="tt-newsletter col-sm-7">

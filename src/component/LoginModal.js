@@ -1,11 +1,22 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useReducer } from 'react';
+import { setLogin } from '../store/action';
+import reducer, { initState } from '../store/reducer';
+import { login } from '../store/userSlice';
 import { addShake } from '../validator/handlerForm';
+import { progressBar } from '../validator/processorBar';
 import Validator from '../validator/validator';
+import { useDebounce } from '../hook';
+import { useDispatch, useSelector } from 'react-redux';
+import { setCarts, setVouchers } from '../store/userSlice';
+import { selectUser } from '../store/userSlice';
 function LoginModal() {
+    const user = useSelector(selectUser);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [errors, setErrors] = useState({});
-    const [users, setUsers] = useState([]);
+    const [isEmail, setIsEmail] = useState(false);
+    const dispatch = useDispatch();
+
     const rules = [
         {
             field: 'email',
@@ -42,29 +53,80 @@ function LoginModal() {
         }
     }
     function isEmptyAll() {
-        return password === '' && email === '';
+        return password === '' || email === '';
     }
     function isEmailExist() {
-        for (const user of users) {
-            if (user.email === email) {
-                return true;
+        return isEmail;
+    }
+    function getVouchers(user) {
+        var myHeaders = new Headers();
+        myHeaders.append('Authorization', 'Bearer ' + user.token);
+        var requestOptions = {
+            method: 'GET',
+            headers: myHeaders,
+        };
+        fetch(`http://localhost:8080/api/voucher/${user.email}`, requestOptions)
+            .then((res) => res.json())
+            .then((res) => {
+                localStorage.setItem('vouchers', JSON.stringify(res.vouchers));
+                dispatch(setVouchers(res.vouchers));
+            });
+    }
+    async function getAccount() {
+        if (!isEmptyAll() && isEmail) {
+            progressBar();
+            setTimeout(checkAccount, 1600);
+            function checkAccount() {
+                fetch('http://localhost:8080/api/auth/signin', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: email,
+                        password: password,
+                    }),
+                })
+                    .then((response) => response.json())
+                    .then((data) => {
+                        if (data.email != undefined) {
+                            localStorage.setItem('user', JSON.stringify(data));
+                            document.getElementById('login-ok-btn').click();
+                            getVouchers(data);
+                            dispatch(login(JSON.stringify(data)));
+                            hideModalLogin();
+                        } else {
+                            alert('Mật khẩu không chính xác');
+                        }
+                    })
+                    .catch((error) => {
+                        console.log(error);
+                    });
             }
         }
-        return false;
     }
-    async function fetchData() {
-        if (!isEmptyAll()) {
-            fetch('https://jsonplaceholder.typicode.com/users')
-                .then((response) => response.json())
-                .then((data) => {
-                    setUsers(data);
-                });
-            console.log('request ok');
-        }
+    function hideModalLogin() {
+        const modalRegisterForm = document.querySelector('#modalRegisterForm button');
+        const modalLoginForm = document.querySelector('#modalLoginForm');
+        const btnLogin = document.querySelector('#btn-login-form');
+        modalLoginForm.click();
+        btnLogin.click();
     }
-
+    async function checkEmail(value) {
+        fetch('http://localhost:8080/api/auth/check-email', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                email: value,
+            }),
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                setIsEmail(data);
+            })
+            .catch();
+    }
     useEffect(() => {
-        fetchData();
+        // getAccount(email, password);
+        // getUserByEmail(email);
     }, []);
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -74,7 +136,7 @@ function LoginModal() {
                 password: password,
             }),
         );
-        fetchData();
+        getAccount(email, password);
         addShake();
     };
     return (
@@ -96,7 +158,10 @@ function LoginModal() {
                                     className="form-control validate"
                                     placeholder="Email"
                                     value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
+                                    onChange={(e) => {
+                                        setEmail(e.target.value);
+                                        checkEmail(e.target.value);
+                                    }}
                                 />
                                 {errors.email && (
                                     <div className="validation shake-validate">
@@ -116,7 +181,9 @@ function LoginModal() {
                                     className="form-control validate"
                                     placeholder="Mật khẩu"
                                     value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
+                                    onChange={(e) => {
+                                        setPassword(e.target.value);
+                                    }}
                                 />
                                 {errors.password && (
                                     <div className="validation shake-validate">
@@ -156,7 +223,14 @@ function LoginModal() {
                                 </div>
                             </div>
                         </div>
-
+                        <div
+                            className="progress-bar progress-bar-striped progress-bar-animated"
+                            style={{ height: '5px', width: '0%' }}
+                            role="progressbar"
+                            aria-valuenow={0}
+                            aria-valuemin={0}
+                            aria-valuemax={100}
+                        ></div>
                         <div className="modal-footer d-flex justify-content-center">
                             <button className="btn btn-primary" type="submit">
                                 Đăng nhập

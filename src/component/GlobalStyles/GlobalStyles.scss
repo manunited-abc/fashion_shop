@@ -45,6 +45,9 @@ body {
     backface-visibility: hidden;
     perspective: 1000px;
 }
+.password-not-match {
+    border: 1px solid #d93025;
+}
 @keyframes shake {
     10%,
     90% {
@@ -65,5 +68,25 @@ body {
     40%,
     60% {
         transform: translate3d(4px, 0, 0);
+    }
+}
+.modal-dialog {
+    animation: modalFaceIn ease 0.7s;
+}
+.nav-link.d-flex.justify-content-between.mb-2 {
+    font-family: 'Nunito', sans-serif !important;
+    font-size: 16px !important;
+}
+.modal-dialog {
+    max-width: 500px !important;
+}
+@keyframes modalFaceIn {
+    from {
+        opacity: 0;
+        transform: translateY(-140px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
 }

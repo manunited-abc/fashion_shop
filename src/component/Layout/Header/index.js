@@ -1,12 +1,59 @@
+import { duration } from '@material-ui/core';
+import { useReducer, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { setLogin } from '../../../store/action';
+import reducer from '../../../store/reducer';
+import { selectCarts, selectUser } from '../../../store/userSlice';
 import CartPopModal from '../../CartPopModal';
 import CompareModal from '../../CompareModal';
 import LoginModal from '../../LoginModal';
 import ProductViewModal from '../../ProductViewModal';
 import RegisterModal from '../../RegisterModal';
+import { logout } from '../../../store/userSlice';
+import { useDispatch, useSelector } from 'react-redux';
 import './header.scss';
-
+import Search from '../../Search';
+import { setCarts, setVouchers } from '../../../store/userSlice';
+import ToastMessage from '../../ToastMessage';
+import { useEffect } from 'react';
+import Waring from '../../Warning';
 function Header() {
+    const dispatch = useDispatch();
+    const user = useSelector(selectUser);
+    const carts = useSelector(selectCarts);
+    const userLocal = JSON.parse(localStorage.getItem('user'));
+    const map = new Map();
+    const mapQuantity = new Map();
+    const cartMap = [];
+    let totalPrice = 0;
+    carts.forEach((cart) => {
+        if (mapQuantity.has(cart.id)) {
+            mapQuantity.set(cart.id, mapQuantity.get(cart.id) + 1);
+            map.set(cart.id, cart);
+        } else {
+            mapQuantity.set(cart.id, 1);
+            map.set(cart.id, cart);
+        }
+        totalPrice += cart.price;
+    });
+    mapQuantity.forEach((value, key) => {
+        cartMap.push([value, key]);
+    });
+    console.log(map);
+
+    setTimeout(setTimeRemoveUser, 180000);
+    function setTimeRemoveUser() {
+        localStorage.removeItem('user');
+        localStorage.removeItem('vouchers');
+    }
+
+    const handleLogouts = (e) => {
+        e.preventDefault();
+        localStorage.removeItem('user');
+        localStorage.removeItem('vouchers');
+        window.location.reload();
+        dispatch(logout());
+    };
     return (
         <header className="header-area header-sticky text-center header-default">
             <div className="header-main-sticky">
@@ -14,144 +61,65 @@ function Header() {
                     <div className="header-main">
                         <div className="container">
                             <div className="header-left float-left d-flex d-lg-flex d-md-block d-xs-block">
-                                <div className="language-wrapper toggle">
-                                    <button type="button" className="btn text-capitalize dropdown-toggle">
-                                        <img src="img/banner/en.png" alt="en" height={12} width={18} />
-                                        <span>English</span>
-                                    </button>
-                                    <div id="language-dropdown" className="language">
-                                        <ul>
-                                            <li>
-                                                <img src="img/banner/en.png" alt="en" width={18} height={12} />
-                                                <span>English</span>
-                                            </li>
-                                            <li>
-                                                <img src="img/banner/fr.png" alt="fr" width={18} height={12} />
-                                                <span>French</span>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </div>
-                                <div className="currency-wrapper toggle">
-                                    <button type="button" className="btn text-capitalize dropdown-toggle">
-                                        <span>€ Euro</span>
-                                    </button>
-                                    <div id="currency-dropdown" className="currency">
-                                        <ul>
-                                            <li>
-                                                <span>€ Euro</span>
-                                            </li>
-                                            <li>
-                                                <span>£ Pound Sterling</span>
-                                            </li>
-                                            <li>
-                                                <span>$ US Dollar</span>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </div>
-                                <div className="contact">
-                                    <i className="material-icons">phone</i>
-                                    <a href="tel:+1234567890">1234567890</a>
-                                </div>
+                                <Search />
                             </div>
                             <div className="header-middle float-lg-left float-md-left float-sm-left float-xs-none">
                                 <div className="logo">
                                     <a href="/">
-                                        <img src="img/logos/logo.png" alt="logo" width={200} height={50} />
+                                        <img src="/img/logos/logo.png" alt="logo" width={200} height={50} />
                                     </a>
                                 </div>
                             </div>
                             <div className="header-right d-flex d-xs-flex d-sm-flex justify-content-end float-right">
-                                <div className="search-wrapper">
-                                    <a>
-                                        <i className="material-icons search">search</i>
-                                        <i className="material-icons close">close</i>{' '}
-                                    </a>
-                                    <form autoComplete="off" action="/action_page.php" className="search-form">
-                                        <div className="autocomplete">
-                                            <input
-                                                id="myInput"
-                                                type="text"
-                                                name="myCountry"
-                                                placeholder="Search here"
-                                            />
-                                            <button type="button">
-                                                <i className="material-icons">search</i>
-                                            </button>
-                                        </div>
-                                    </form>
-                                </div>
                                 <div className="user-info" style={{ width: 0 }}></div>
-                                {/* <div className="user-info">
-                                    <button type="button" className="btn">
-                                        <i className="material-icons">perm_identity</i>{' '}
-                                    </button>
-                                    <div id="user-dropdown" className="user-menu">
-                                        <ul>
-                                            <li>
-                                                <a href="my-account.html" className="text-capitalize">
-                                                    my account
-                                                </a>
-                                            </li>
-                                            <li>
-                                                <a
-                                                    href="#"
-                                                    className="modal-view button"
-                                                    data-toggle="modal"
-                                                    data-target="#modalRegisterForm"
-                                                >
-                                                    Đăng ký
-                                                </a>
-                                            </li>
-                                            <li>
-                                                <a
-                                                    href="#"
-                                                    className="modal-view button"
-                                                    data-toggle="modal"
-                                                    data-target="#modalLoginForm"
-                                                >
-                                                    Đăng nhập
-                                                </a>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </div> */}
+                                <div className="user-info" style={{ width: 0 }}></div>
                                 <div className="cart-wrapper">
                                     <button type="button" className="btn">
                                         <i className="material-icons">shopping_cart</i>
-                                        <span className="ttcount">2</span>{' '}
+                                        <span className="ttcount">{carts.length == 0 ? 0 : carts.length}</span>{' '}
                                     </button>
                                     <div id="cart-dropdown" className="cart-menu">
                                         <ul className="w-100 float-left">
-                                            <li>
+                                            <li id="list-cart">
                                                 <table className="table table-striped">
                                                     <tbody>
-                                                        <tr>
-                                                            <td className="text-center">
-                                                                <a href="#">
-                                                                    <img
-                                                                        src="img/products/01.jpg"
-                                                                        alt={1}
-                                                                        title={1}
-                                                                        height={104}
-                                                                        width={80}
-                                                                    />
-                                                                </a>
-                                                            </td>
-                                                            <td className="text-left product-name">
-                                                                <a href="#">Xin ưu tiên ặc </a>
-                                                                <div className="quantity float-left w-100">
-                                                                    <span className="cart-qty">1 × </span>
-                                                                    <span className="text-left price"> $20.00</span>
-                                                                </div>
-                                                            </td>
-                                                            <td className="text-center close">
-                                                                <a className="close-cart">
-                                                                    <i className="material-icons">close</i>
-                                                                </a>
-                                                            </td>
-                                                        </tr>
+                                                        {cartMap.map((item) => (
+                                                            <tr key={item[1]}>
+                                                                <td className="text-center">
+                                                                    <a href="#">
+                                                                        <img
+                                                                            src={`/img/products/${
+                                                                                map.get(item[1]).images[0]
+                                                                            }`}
+                                                                            alt={1}
+                                                                            title={1}
+                                                                            height={104}
+                                                                            width={80}
+                                                                        />
+                                                                    </a>
+                                                                </td>
+                                                                <td className="text-left product-name">
+                                                                    <a href={`/products/${item[1]}`}>
+                                                                        {map.get(item[1]).name}
+                                                                    </a>
+                                                                    <a href="#"> </a>
+                                                                    <div className="quantity float-left w-100">
+                                                                        <span className="cart-qty">{item[0]} × </span>
+                                                                        <span className="text-left price">
+                                                                            {new Intl.NumberFormat('vn-VN', {
+                                                                                style: 'currency',
+                                                                                currency: 'VND',
+                                                                            }).format(map.get(item[1]).price)}{' '}
+                                                                        </span>
+                                                                    </div>
+                                                                </td>
+                                                                <td className="text-center close">
+                                                                    <a className="close-cart">
+                                                                        <i className="material-icons">close</i>
+                                                                    </a>
+                                                                </td>
+                                                            </tr>
+                                                        ))}
                                                     </tbody>
                                                 </table>
                                             </li>
@@ -160,10 +128,15 @@ function Header() {
                                                     <tbody>
                                                         <tr>
                                                             <td className="text-left">
-                                                                <strong>Total</strong>
+                                                                <strong>Tổng cộng</strong>
                                                             </td>
                                                             <td className="text-right">
-                                                                <strong>$2,122.00</strong>
+                                                                <strong>
+                                                                    {new Intl.NumberFormat('vn-VN', {
+                                                                        style: 'currency',
+                                                                        currency: 'VND',
+                                                                    }).format(totalPrice)}{' '}
+                                                                </strong>
                                                             </td>
                                                         </tr>
                                                     </tbody>
@@ -171,35 +144,75 @@ function Header() {
                                             </li>
                                             <li className="buttons w-100 float-left">
                                                 <div className="cart-button">
-                                                    <button className="btn pull-left mt_10 btn-primary btn-rounded w-100">
+                                                    <a
+                                                        className="btn pull-left mt_10 btn-primary btn-rounded w-100"
+                                                        href="cart"
+                                                    >
                                                         Giỏ hàng
-                                                    </button>
-                                                    <button className="btn pull-right mt_10 btn-primary btn-rounded w-100">
-                                                        Thanh toán
-                                                    </button>
+                                                    </a>
                                                 </div>
                                             </li>
                                         </ul>
                                     </div>
                                 </div>
-                                <div className="register-login">
-                                    <a
-                                        href="#"
-                                        className="modal-view button"
-                                        data-toggle="modal"
-                                        data-target="#modalRegisterForm"
-                                    >
-                                        Đăng ký /
-                                    </a>
-                                    <a
-                                        href="#"
-                                        className="modal-view button"
-                                        data-toggle="modal"
-                                        data-target="#modalLoginForm"
-                                    >
-                                        Đăng nhập
-                                    </a>
-                                </div>
+                                {user ? (
+                                    <div className="infor-user">
+                                        <div
+                                            style={{ cursor: 'pointer', marginBottom: '12px' }}
+                                            onClick={(e) => {
+                                                document.querySelector('#user-dropdown').classList.toggle('show-user');
+                                            }}
+                                        >
+                                            <i className="material-icons avatar-user">account_circle</i>
+                                        </div>
+                                        <div id="user-dropdown" className="user-menu">
+                                            <ul>
+                                                <li>
+                                                    <a className="text-capitalize">Thông tin tài khoản</a>
+                                                </li>
+                                                <li>
+                                                    <a href="../history-order" className="text-capitalize">
+                                                        Lịch sử đơn hàng
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a
+                                                        href=""
+                                                        className="text-capitalize"
+                                                        onClick={(e) => {
+                                                            handleLogouts(e);
+                                                        }}
+                                                    >
+                                                        Đăng xuất
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                            <div className="name-user">
+                                                <span>{userLocal.name}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="register-login">
+                                        <a
+                                            href="#"
+                                            className="modal-view button"
+                                            data-toggle="modal"
+                                            data-target="#modalRegisterForm"
+                                        >
+                                            Đăng ký /
+                                        </a>
+                                        <a
+                                            href="#"
+                                            id="btn-login-form"
+                                            className="modal-view button"
+                                            data-toggle="modal"
+                                            data-target="#modalLoginForm"
+                                        >
+                                            Đăng nhập
+                                        </a>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -491,6 +504,21 @@ function Header() {
             <ProductViewModal />
             <CartPopModal />
             <CompareModal />
+            <ToastMessage />
+            <Waring name="login-success" message="Bạn đã đăng nhập thành công" />
+            <Waring name="register-success" message="Bạn đã đăng ký thành công thành công" />
+            <button
+                id="login-ok-btn"
+                data-target="#login-success"
+                data-toggle="modal"
+                style={{ display: 'none' }}
+            ></button>
+            <button
+                id="register-ok-btn"
+                data-target="#register-success"
+                data-toggle="modal"
+                style={{ display: 'none' }}
+            ></button>
         </header>
     );
 }

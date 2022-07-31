@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import Validator from '../validator/validator';
 import { addShake } from '../validator/handlerForm';
+import { progressBar } from '../validator/processorBar';
 import Button from './Button';
 function RegisterModal() {
     const [name, setName] = useState('');
@@ -10,6 +11,8 @@ function RegisterModal() {
     const [rePassword, setRePassword] = useState('');
     const [errors, setErrors] = useState({});
     const [user, setUser] = useState({});
+    const [isEmail, setIsEmail] = useState(false);
+    const [valueProgress, setValueProgress] = useState(0);
 
     function isPasswordValid(value) {
         const pattern = /[0-9]/;
@@ -28,10 +31,12 @@ function RegisterModal() {
         return password === rePassword;
     }
     function isPhoneNumber(value) {
-        if (value === '') {
+        if (value == '') {
             return true;
         }
-        return /\d/g.test(value);
+        var str = value.match(/\d/g) != null ? value.match(/\d/g) : 0;
+        console.log(str.length === 10);
+        return str.length === 10 && value.length == 10;
     }
     function isLength(value) {
         return value.length <= 20;
@@ -50,8 +55,8 @@ function RegisterModal() {
     function isEmptyAll() {
         return name === '' && password === '' && phoneNum === '' && email === '' && rePassword === '';
     }
-    function isEmailExist(value) {
-        return user.email === value;
+    function isEmailExist() {
+        return isEmail;
     }
 
     function isValidateSuccess() {
@@ -65,7 +70,13 @@ function RegisterModal() {
             validator.isEmail(email)
         );
     }
-
+    function hideModalRegister() {
+        const modalRegisterForm = document.querySelector('#modalRegisterForm button');
+        const modalLoginForm = document.querySelector('#modalLoginForm');
+        const btnLogin = document.querySelector('#btn-login-form');
+        modalRegisterForm.click();
+        btnLogin.click();
+    }
     const rules = [
         {
             field: 'name',
@@ -138,33 +149,47 @@ function RegisterModal() {
             email: email,
             phone: phoneNum === '' ? null : phoneNum,
             password: password,
+            role: ['user'],
         }),
     };
 
     async function fetchData() {
         if (isValidateSuccess()) {
-            fetch('http://localhost:8080/users/add-user', requestOptions)
-                .then((response) => response.json())
-                .then((data) => {
-                    console.log(data);
-                })
-                .catch(() => console.log('failed'));
+            progressBar();
+            setTimeout(addUser, 1700);
+            function addUser() {
+                fetch('http://localhost:8080/api/auth/signup', requestOptions)
+                    .then((response) => response.json())
+                    .then((data) => {
+                        console.log(data);
+                        setIsEmail(true);
+                    })
+                    .catch(() => console.log('failed'));
+                document.getElementById('register-ok-btn').click();
+                hideModalRegister();
+            }
+            // console.log('Time request: ' + time);
         }
     }
-    async function getUserByEmail(value) {
-        fetch('http://localhost:8080/users/check-email?email=' + value)
+
+    async function checkEmail(value) {
+        fetch('http://localhost:8080/api/auth/check-email', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                email: value,
+            }),
+        })
             .then((response) => response.json())
             .then((data) => {
-                setUser(data);
+                setIsEmail(data);
             })
             .catch();
     }
     useEffect(() => {
-        fetchData();
-        getUserByEmail();
+        // fetchData();
+        // getUserByEmail();
     }, []);
-
-    //Validation
 
     //Handle on submit
     const handleSubmit = (e) => {
@@ -250,7 +275,7 @@ function RegisterModal() {
                                     value={email}
                                     onChange={(e) => {
                                         setEmail(e.target.value);
-                                        getUserByEmail(e.target.value);
+                                        checkEmail(e.target.value);
                                     }}
                                 />
 
@@ -361,6 +386,16 @@ function RegisterModal() {
                                 </div>
                             </div>
                         </div>
+
+                        <div
+                            className="progress-bar progress-bar-striped progress-bar-animated"
+                            style={{ height: '5px', width: '0%' }}
+                            role="progressbar"
+                            aria-valuenow={0}
+                            aria-valuemin={0}
+                            aria-valuemax={100}
+                        ></div>
+
                         <div className="modal-footer d-flex justify-content-center">
                             <input
                                 className="btn btn-primary display-modal"

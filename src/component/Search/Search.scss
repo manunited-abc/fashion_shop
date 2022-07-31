@@ -1,0 +1,19 @@
+.search-form {
+    display: block !important;
+    width: 200px !important;
+}
+.search-wrapper {
+    .autocomplete {
+        display: flex;
+        border: 1px solid;
+        width: 255px;
+        justify-content: space-between;
+    }
+    input {
+        border: none;
+    }
+    button {
+        border: none;
+        cursor: pointer;
+    }
+}
